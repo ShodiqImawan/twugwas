@@ -7,10 +7,10 @@ app.use(express.json());
 
 //Create connection to Database
 const db = mysql.createConnection({
-    host: '192.168.43.10',
-    user: 'boor',
-    password: 'boorkick45',
-    database: 'webplayermusic'
+    host: 'IP Address',
+    user: 'User Database',
+    password: 'Passrword User Database',
+    database: 'Database'
 });
 
 //Try connect to Database
