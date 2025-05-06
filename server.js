@@ -33,6 +33,17 @@ app.get('/webplayermusic/account', (req, res) => {
     });
 });
 
+//Route: Get all session_login
+app.get('/webplayermusic/session_login', (req, res) => {
+    db.query('SELECT * FROM session_login', (err, result) => {
+        if(err) {
+            return res.status(500).json({message: 'Server is trouble'});
+        }
+
+        res.json(result);
+    });
+});
+
 //Route: Register
 app.post('/webplayermusic/account/register', (req, res) => {
     const {username, password, email} = req.body;
@@ -99,7 +110,7 @@ app.post('/webplayermusic/login', (req, res) => {
 
         db.query(sessionCheckToken , [user.id, Date.now()], (err, sessionResult) => {
             if (err) {
-                return res.statu(500).json({message: 'Failed to check session, Server is trouble'}); 
+                return res.status(500).json({message: 'Failed to check session, Server is trouble'}); 
             }
 
             if (sessionResult.length > 0) {
