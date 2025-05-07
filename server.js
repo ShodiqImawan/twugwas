@@ -7,7 +7,7 @@ app.use(express.json());
 
 //Create connection to Database
 const db = mysql.createConnection({
-    host: '192.168.204.8',
+    host: '192.168.43.10',
     user: 'boor',
     password: 'boorkick45',
     database: 'webplayermusic'
@@ -72,7 +72,7 @@ app.post('/webplayermusic/account/register', (req, res) => {
                 return res.status(500).json({message: 'Failed to add account'});
             }
 
-            res.status(200).json({
+            return res.status(200).json({
                 message: 'Account successfully added',
                 insertedId: result.insertId
             })
@@ -112,6 +112,7 @@ app.post('/webplayermusic/account/login', (req, res) => {
 
             const newToken = crypto.randomBytes(64).toString('hex');
             const expiryTime = Date.now() + 24 * 60 * 60 * 1000;
+            const sessionNew = 'INSERT INTO session_login (account_id, session_token, expiry_time) VALUES (?, ?, ?)';
 
             if (err) {
                 return res.status(500).json({message: 'Failed to check session, Server is trouble'}); 
@@ -119,14 +120,12 @@ app.post('/webplayermusic/account/login', (req, res) => {
 
             if (sessionResult.length === 0) {
 
-                const sessionNew = 'INSERT INTO session_login (account_id, session_token, expiry_time) VALUES (?, ?, ?)';
-
                 db.query(sessionNew, [user.id, newToken, expiryTime], (err) => {
                     if(err) {
                         return res.status(500).json({message: 'Failed to check session, Server is trouble'});
                     }
 
-                    res.status(200).json({
+                    return res.status(200).json({
                         message:'Login successful',
                         sessionToken: newToken,
                         user: {
@@ -144,10 +143,43 @@ app.post('/webplayermusic/account/login', (req, res) => {
             if(sessionUser.expiry_time < Date.now()) {
 
                 //Hapus sesi dan isi ulang dengan yang baru
+                const deleteSession = 'DELETE FROM session_login WHERE account_id = ?';
 
+                db.query(deleteSession, [sessionUser.id], (err, forResult) => {
+                    if(err) {
+                        return res.status(500).json({message: 'Failed to check session, Server is trouble'});
+                    }
+
+                    db.query(sessionNew, [user.id, newToken, expiryTime], (err) => {
+                        if(err) {
+                            return res.status(500).json({message: 'Failed to check session, Server is trouble'});
+                        }
+
+                        return res.status(200).json({
+                            message:'Login successful',
+                            sessionToken: newToken,
+                            user: {
+                                id: user.id,
+                                username: user.username,
+                                email: user.email,
+                                type: user.type
+                            }
+                        });
+                    })
+
+                });
             }
             
-            return res.status(500).json({message: 'Failed to check session, Server is trouble'});
+            return res.status(200).json({
+                message: 'Login successful',
+                sessionToken: sessionUser.session_token,
+                user: {
+                    id: user.id,
+                    username: user.username,
+                    email: user.email,
+                    type: user.type
+                }
+            });
         });
     });
 });
