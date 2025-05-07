@@ -7,10 +7,10 @@ app.use(express.json());
 
 //Create connection to Database
 const db = mysql.createConnection({
-    host: 'IP Address',
-    user: 'User Database',
-    password: 'Passrword User Database',
-    database: 'Database'
+    host: '192.168.204.8',
+    user: 'boor',
+    password: 'boorkick45',
+    database: 'webplayermusic'
 });
 
 //Try connect to Database
@@ -81,7 +81,7 @@ app.post('/webplayermusic/account/register', (req, res) => {
 })
 
 //Route: Login
-app.post('/webplayermusic/login', (req, res) => {
+app.post('/webplayermusic/account/login', (req, res) => {
     const {email, password} = req.body;
 
     if (!email || !password) {
@@ -106,62 +106,48 @@ app.post('/webplayermusic/login', (req, res) => {
         const user = result[0];
         
         //Check session token
-        const sessionCheckToken = 'SELECT * FROM session_login WHERE account_id = ? AND expiry_time > ?';
+        const sessionCheck = 'SELECT * FROM session_login WHERE account_id = ?';
 
-        db.query(sessionCheckToken , [user.id, Date.now()], (err, sessionResult) => {
+        db.query(sessionCheck, [user.id], (err, sessionResult) => {
+
+            const newToken = crypto.randomBytes(64).toString('hex');
+            const expiryTime = Date.now() + 24 * 60 * 60 * 1000;
+
             if (err) {
                 return res.status(500).json({message: 'Failed to check session, Server is trouble'}); 
             }
 
-            if (sessionResult.length > 0) {
-                const existingToken = sessionResult[0].session_token;
+            if (sessionResult.length === 0) {
 
-                return res.status(200).json({
-                    message: 'Login successful',
-                    sessionToken: existingToken,
-                    user: {
-                        id: user.id,
-                        username: user.username,
-                        email: user.email,
-                        type: user.type
-                    }
-                });
-            }
+                const sessionNew = 'INSERT INTO session_login (account_id, session_token, expiry_time) VALUES (?, ?, ?)';
 
-            const deleteOldSessionToken = 'DELETE FROM session_login WHERE account_id = ?';
-
-            db.query(deleteOldSessionToken, [user.id], (err) => {
-                if (err) {
-                    return res.status(500).json({message: 'Failed to delete expired session token, Server is trouble'});
-                }
-                
-                //Generate session token
-                const sessionToken = crypto.randomBytes(64).toString('hex');
-
-                //Set expiry token untuk 24jam kedepan
-                const expiryTime = Date.now() + 24 * 60 * 60 * 1000;
-
-                //Simpan session token dan expiry time ke session_login
-                const sessionSql = 'INSERT INTO session_login (account_id, session_token, expiry_time) VALUES (?, ?, ?)';
-
-                db.query(sessionSql,  [user.id, sessionToken, expiryTime], (err, sessionResult) => {
-                    if (err) {
-                        return res.status(500).json({message: 'Failed to save session, Server is trouble'});
+                db.query(sessionNew, [user.id, newToken, expiryTime], (err) => {
+                    if(err) {
+                        return res.status(500).json({message: 'Failed to check session, Server is trouble'});
                     }
 
-                    //Kirim response dengan session token dan data user
                     res.status(200).json({
-                        message: 'Login successful',
-                        sessionToken: sessionToken,
+                        message:'Login successful',
+                        sessionToken: newToken,
                         user: {
                             id: user.id,
                             username: user.username,
                             email: user.email,
                             type: user.type
                         }
-                    });    
+                    });
                 });
-            });
+            }
+
+            const sessionUser = sessionResult[0];
+
+            if(sessionUser.expiry_time < Date.now()) {
+
+                //Hapus sesi dan isi ulang dengan yang baru
+
+            }
+            
+            return res.status(500).json({message: 'Failed to check session, Server is trouble'});
         });
     });
 });

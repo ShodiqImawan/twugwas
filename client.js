@@ -94,7 +94,7 @@ function sendRequest(path, data, method) {
                 } catch(err) {
                     resolve(responseData);
                 }
-            })
+            });
         });
         
         req.on('error', (e) => {
@@ -153,5 +153,4 @@ async function login() {
 
 
 
-
-main()
+main();
