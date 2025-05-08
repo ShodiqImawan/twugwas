@@ -42,27 +42,6 @@ function ask (question, type = null) {
 }
 
 
-//Fungsi utama yang akan di jalankan
-async function main() {
-    while (true) {
-        const choice = await ask('Do you want to (login) or (register)? \n');
-
-        if (choice.toLowerCase() === 'login') {
-            console.log('\nYou chose to login.\n');
-            // Panggil fungsi login
-            await login();
-            break;
-        } else if (choice.toLowerCase() === 'register') {
-            // Panggil fungsi register
-            await register();
-            break;
-        } else {
-            console.log('Please choose either "login" or "register".\n');
-        }
-    }
-
-    rl.close();
-}
 
 
 //Fungsi panggil API
@@ -103,7 +82,7 @@ function sendRequest(path, data, method) {
 
         req.write(dataStr);
         req.end();
-
+        
     });
 }
 
@@ -111,11 +90,11 @@ function sendRequest(path, data, method) {
 //Register
 async function register() {
     console.log('\n=== REGISTER ===\n');
-
+    
     const username = await ask('Enter your username: ');
     const email = await ask('Enter your email: ', 'email');
     const password = await ask('Enter your password: ');
-
+    
     try {
         const response = await sendRequest('/webplayermusic/account/register', {
             username,
@@ -142,7 +121,7 @@ async function login() {
             email,
             password
         }, 'POST');
-
+        
         console.log(`\n[Server Response] ${response.message}`);
         // Tambahkan logika lanjutan jika login sukses, misal menyimpan token
     } catch(error) {
@@ -150,7 +129,32 @@ async function login() {
     }
 }
 
+//Play Music
+async function playMusic() {
+    
+}
 
+//Fungsi utama yang akan di jalankan
+async function main() {
+    while (true) {
+        const choice = await ask('Do you want to (login) or (register)? \n');
+
+        if (choice.toLowerCase() === 'login') {
+            console.log('\nYou chose to login.\n');
+            // Panggil fungsi login
+            await login();
+            break;
+        } else if (choice.toLowerCase() === 'register') {
+            // Panggil fungsi register
+            await register();
+            break;
+        } else {
+            console.log('Please choose either "login" or "register".\n');
+        }
+    }
+
+    rl.close();
+}
 
 
 main();
