@@ -1,3 +1,9 @@
-#Setting Database Sebelum Dipakai
+# Setting Database Sebelum Dipakai #
 
-##Database##
+## Database ##
+` CREATE DATABASE webplayermusic;`
+
+## Table ##
+- Table account (under construction)
+
+- Table session_login (under construction)
