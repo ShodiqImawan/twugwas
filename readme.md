@@ -1,4 +1,5 @@
 # Setting Database Sebelum Dipakai #
+Tanpa settingan ini, kalian tidak akan bisa memakai nya atau melanjutkan development!
 
 ## Database ##
 ` CREATE DATABASE webplayermusic;`
