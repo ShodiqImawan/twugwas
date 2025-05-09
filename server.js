@@ -1,41 +1,22 @@
 const express = require('express'); 
-const crypto = require('crypto');
-const db = require('./db');
+const pool = require('./dbconnection');
 const app = express();
+const auth = require('./api/auth');
+const getdata = require('./api/getdata');
 
 app.use(express.json());
 
+app.use('/webplayermusic/account', auth);
+app.use('/webplayermusic/data', getdata);
+
 //Try connect to Database
-db.connect(err => {
+pool.connect(err => {
     if (err) {
         console.log(`Failed to connect Database\n`, err);
         return;
     }
     console.log(`Success connected to Database`);
 });
-
-//Route: Get all account
-app.get('/webplayermusic/account', (req, res) => {
-    db.query('SELECT * FROM account', (err, result) => {
-        if (err) {
-            return res.status(500).json({message: 'Server is trouble'});
-        }
-
-        res.json(result);
-    });
-});
-
-//Route: Get all session_login
-app.get('/webplayermusic/session_login', (req, res) => {
-    db.query('SELECT * FROM session_login', (err, result) => {
-        if(err) {
-            return res.status(500).json({message: 'Server is trouble'});
-        }
-
-        res.json(result);
-    });
-});
-
 
 const PORT = 3000;
 app.listen(PORT, () => {

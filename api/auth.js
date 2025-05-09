@@ -1,6 +1,6 @@
 const express = require('express');
 const crypto = require('crypto');
-const db = require ('../db');
+const pool = require ('../dbconnection');
 const router = express.Router();
 
 //Route: Register
@@ -8,25 +8,25 @@ router.post('/register', (req, res) => {
     const {username, password, email} = req.body;
 
     if (!username || !password || !email) {
-        return res.status(401).json({message: 'All forms must be filled out'})
+        return res.status(400).json({message: 'All forms must be filled out'})
     }
 
     const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
 
     const sqlCheck = 'SELECT * FROM account WHERE username = ? OR email = ?'
 
-    db.query(sqlCheck, [username, email], (err, result) => {
+    pool.query(sqlCheck, [username, email], (err, result) => {
         if (err) {
             return res.status(500).json({message: 'Server is trouble'});
         }
 
         if (result.length > 0) {
-            return res.status(401).json({message: 'Username of Email already exists'});
+            return res.status(401).json({message: 'Username or Email already exists'});
         }
 
         const sql = 'INSERT INTO account (username, password, email) VALUES (?, ?, ?)';
     
-        db.query(sql, [username, hashedPassword, email], (err, result) => {
+        pool.query(sql, [username, hashedPassword, email], (err, result) => {
             if (err) {
                 return res.status(500).json({message: 'Failed to add account'});
             }
@@ -40,7 +40,7 @@ router.post('/register', (req, res) => {
 })
 
 //Route: Login
-router.post('/webplayermusic/account/login', (req, res) => {
+router.post('/login', (req, res) => {
     const {email, password} = req.body;
 
     if (!email || !password) {
@@ -52,7 +52,7 @@ router.post('/webplayermusic/account/login', (req, res) => {
 
     const sql = 'SELECT * FROM account WHERE email = ? AND password = ?';
 
-    db.query(sql, [email, hashedPassword], (err, result) => {
+    pool.query(sql, [email, hashedPassword], (err, result) => {
         if (err) {
             return res.status(500).json({message: 'Server is trouble'});
         }
@@ -67,7 +67,7 @@ router.post('/webplayermusic/account/login', (req, res) => {
         //Check session token
         const sessionCheck = 'SELECT * FROM session_login WHERE account_id = ?';
 
-        db.query(sessionCheck, [user.id], (err, sessionResult) => {
+        pool.query(sessionCheck, [user.id], (err, sessionResult) => {
 
             const newToken = crypto.randomBytes(64).toString('hex');
             const expiryTime = Date.now() + 24 * 60 * 60 * 1000;
@@ -79,7 +79,7 @@ router.post('/webplayermusic/account/login', (req, res) => {
 
             if (sessionResult.length === 0) {
 
-                db.query(sessionNew, [user.id, newToken, expiryTime], (err) => {
+                pool.query(sessionNew, [user.id, newToken, expiryTime], (err) => {
                     if(err) {
                         return res.status(500).json({message: 'Failed to check session, Server is trouble'});
                     }
@@ -95,6 +95,8 @@ router.post('/webplayermusic/account/login', (req, res) => {
                         }
                     });
                 });
+
+                return; //Mencegah kode lanjut ke bawah dan seharusnya berhenti di sini
             }
 
             const sessionUser = sessionResult[0];
@@ -104,17 +106,17 @@ router.post('/webplayermusic/account/login', (req, res) => {
                 //Hapus sesi dan isi ulang dengan yang baru
                 const deleteSession = 'DELETE FROM session_login WHERE account_id = ?';
 
-                db.query(deleteSession, [user.id], (err, forResult) => {
+                pool.query(deleteSession, [user.id], (err, forResult) => {
                     if(err) {
                         return res.status(500).json({message: 'Failed to check session, Server is trouble'});
                     }
 
-                    db.query(sessionNew, [user.id, newToken, expiryTime], (err) => {
+                    pool.query(sessionNew, [user.id, newToken, expiryTime], (err) => {
                         if(err) {
                             return res.status(500).json({message: 'Failed to check session, Server is trouble'});
                         }
 
-                        return res.status(201).json({
+                        return res.status(200).json({
                             message:'Login successful',
                             sessionToken: newToken,
                             user: {
@@ -129,7 +131,7 @@ router.post('/webplayermusic/account/login', (req, res) => {
                 });
             }
             
-            return res.status(201).json({
+            return res.status(200).json({
                 message: 'Login successful',
                 sessionToken: sessionUser.session_token,
                 user: {
