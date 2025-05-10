@@ -70,3 +70,5 @@ CREATE TABLE session_login (
     FOREIGN KEY (account_id) REFERENCES account(id)
 );
 ```
+
+
