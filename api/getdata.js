@@ -1,3 +1,5 @@
+//All Features Related to Get Data
+
 const express = require('express');
 const pool = require ('../dbconnection');
 const router = express.Router();

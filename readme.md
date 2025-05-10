@@ -1,14 +1,54 @@
-# Setting Database Sebelum Dipakai #
-Tanpa settingan ini, kalian tidak akan bisa memakai nya atau melanjutkan development!
+## Setting Sebelum Pakai
+Pastikan kalian mengikuti langkah-langkah di bawah ini untuk mempersiapkan project sebelum melanjutkan pengembangan. Tanpa settingan ini, kalian tidak akan bisa melanjutkan development. 
+Kecuali kalian memang bisa tanpa settingan ini!
 
-Noted: Untuk usernya bisa kalian sesuaikan yaa
+## update
+- Struktur folder baru
+- Sistem log server (Beta)
+- Sistem maintenance (Beta)
+- Sistem database pool
 
-## Database ##
-``` CREATE DATABASE webplayermusic; ```
+## Noted
+- Informasi database sesuaikan sendiri di file .env
+- Jika ingin push, pastikan ke branch dev saja
+- Beta = Masih dalam tahap pengembangan atau eksperimen
 
-## Table ##
-- Table account
-``` sql
+## Clone
+Pakai perintah ini agar tidak ribet ketik URL atau branch secara manual
+``` git clone -b dev https://github.com/ShodiqImawan/twugwas.git ```
+
+## Package
+Jalankan perintah ini untuk menginstal semua package yang dibutuhkan
+``` npm install ```
+
+## Noted for database
+Jika buat user jangan pakai
+```sql
+CREATE USER 'nama'@'localhost' IDENTIFIED BY 'password';
+```
+
+Tapi pakailah ini, agar user bisa di akses oleh semua ip
+```sql
+CREATE USER 'nama'@'%' IDENTIFIED BY 'password';
+```
+
+Jangan lupa berikan semua akses ke usernya
+```sql
+GRANT ALL PRIVILEGES ON *.* TO 'nama'@'%' WITH GRANT OPTION;
+```
+
+```sql
+FLUSH PRIVILEGES;
+```
+
+## Database mysql
+```sql
+ CREATE DATABASE webplayermusic; 
+ ```
+
+## Table
+### Table account
+```sql
 CREATE TABLE account (
     id INT NOT NULL AUTO_INCREMENT,
     username VARCHAR(200) NOT NULL UNIQUE,
@@ -19,7 +59,7 @@ CREATE TABLE account (
  ); 
  ```
 
-- Table session_login
+### Table session_login
 ```sql
 CREATE TABLE session_login (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -30,3 +70,5 @@ CREATE TABLE session_login (
     FOREIGN KEY (account_id) REFERENCES account(id)
 );
 ```
+
+
