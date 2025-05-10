@@ -1,3 +1,5 @@
+//All Features Related to Authentication
+
 const express = require('express');
 const crypto = require('crypto');
 const pool = require ('../dbconnection');
